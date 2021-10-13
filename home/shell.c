@@ -77,10 +77,47 @@ void free_line(char **line)
 
 int f_fork(char **line)
 {
-	while(strcmp(line[0], "exit") != 0 && strcmp(line[0], "quit") != 0)
+        int fd = 0, index = 0;
+        int size = 0;
+        while(line[size] != NULL)
+        {
+                if(strcmp(line[size], ">") == 0)
+                {
+                        fd = open(line[size + 1], O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
+                        if(fd < 0)
+                        {
+                                perror("Open failed");
+                                return 1;
+                        }
+                        index = 1;
+                        free(line[size + 1]);
+                        line[size] = NULL;
+                        break;
+                }
+                else if(strcmp(line[size], "<") == 0)
+                {
+                        fd = open(line[size + 1], O_RDONLY|O_TRUNC);
+                        if(fd < 0)
+                        {
+                                perror("Open failed");
+                                return 1;
+                        }
+                        index = 0;
+                        free(line[size + 1]);
+                        line[size] = NULL;
+                        break;
+                }
+                size++;
+        }
+        while(strcmp(line[0], "exit") != 0 && strcmp(line[0], "quit") != 0)
         {
                 if(fork() == 0)
                 {
+                        //if(fd > 0)    // если файл открыт то
+                        //{
+                        //      dup2(fd, index);
+                        //}
+                        dup2(fd, index);
                         if(execvp(line[0], line) < 0)
                         {
                                 perror("exec failed");
@@ -92,6 +129,11 @@ int f_fork(char **line)
                 wait(NULL);
                 line = getlist();
         }
+        if(fd > 0)
+        {
+                close(fd);
+        }
+        fd = 0;
         free_line(line);
         return 0;
 }
