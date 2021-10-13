@@ -75,8 +75,30 @@ void free_line(char **line)
         free(line);
 }
 
+int f_fork(char **line)
+{
+	while(strcmp(line[0], "exit") != 0 && strcmp(line[0], "quit") != 0)
+        {
+                if(fork() == 0)
+                {
+                        if(execvp(line[0], line) < 0)
+                        {
+                                perror("exec failed");
+                                free_line(line);
+                                return 1;
+                        }
+                }
+                free_line(line);
+                wait(NULL);
+                line = getlist();
+        }
+        free_line(line);
+        return 0;
+}
+
 int main()
 {
         char **line = getlist();
+	f_fork(line);
         return 0;
 }
