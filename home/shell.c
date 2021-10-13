@@ -65,6 +65,16 @@ char **getlist()
         return str;
 }
 
+void free_line(char **line)
+{
+        int i;
+        for(i = 0; line[i]; i++)
+        {
+                free(line[i]);
+        }
+        free(line);
+}
+
 int main()
 {
         char **line = getlist();
