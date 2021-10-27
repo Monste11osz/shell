@@ -67,24 +67,17 @@ char **getlist()
 
 void free_line(char **line)
 {
-<<<<<<< HEAD
-	int i;
-=======
 	int i; //j = type + 1;
->>>>>>> 9c90a5a6bec91aa517888b7f724b8fa030cb54aa
 	for(i = 0; line[i]; i++)
 	{
 		free(line[i]);
 	}
 	free(line);
-<<<<<<< HEAD
-=======
 	/*for(j; line[j]; j++)
 	{
 		free(line[j]);
 	}
 	free(line);*/
->>>>>>> 9c90a5a6bec91aa517888b7f724b8fa030cb54aa
 }
 
 void pip_two(char **line, int type)
@@ -117,7 +110,6 @@ int f_fork(char **line)
 {
 	int fd = 0, index = 0, type = 0;
 	int size = 0;
-<<<<<<< HEAD
 	char end;
 	while(line[size] != NULL)
         {
@@ -168,90 +160,6 @@ int f_fork(char **line)
 	}
 	else
 	{
-=======
-	/*while(line[size] != NULL)
-	{
-		if(strcmp(line[size], ">") == 0)
-		{
-			fd = open(line[size + 1], O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
-			if(fd < 0)
-			{
-				perror("Open failed");
-				return 1;
-			}
-			index = 1;
-			free(line[size + 1]);
-			line[size] = NULL;
-			break;
-		}
-		else if(strcmp(line[size], "<") == 0)
-		{
-			fd = open(line[size + 1], O_RDONLY|O_TRUNC);
-			if(fd < 0)
-			{
-				perror("Open failed");
-				return 1;
-			}
-			index = 0;
-			free(line[size + 1]);
-			line[size] = NULL;
-			break;
-		}
-		else if(strcmp(line[size], "|") == 0)
-		{
-			type = size;
-			free(line[size]);
-			line[size] = NULL;
-			break;
-		}
-		size++;
-	}*/
-	while(strcmp(line[0], "exit") != 0 && strcmp(line[0], "quit") != 0)
-	{
-		while(line[size] != NULL)
-        	{
-                	if(strcmp(line[size], ">") == 0)
-                	{
-                        	fd = open(line[size + 1], O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
-                        	if(fd < 0)
-                        	{
-                                	perror("Open failed");
-                                	return 1;
-                        	}
-                        	index = 1;
-                        	free(line[size + 1]);
-                        	line[size] = NULL;
-                        	break;
-                	}
-                	else if(strcmp(line[size], "<") == 0)
-                	{
-                        	fd = open(line[size + 1], O_RDONLY|O_TRUNC);
-                        	if(fd < 0)
-                        	{
-                                	perror("Open failed");
-                                	return 1;
-                        	}
-                        	index = 0;
-                        	free(line[size + 1]);
-                        	line[size] = NULL;
-                        	break;
-                	}
-                	else if(strcmp(line[size], "|") == 0)
-                	{
-                        	type = size;
-                        	free(line[size]);
-                        	line[size] = NULL;
-                        	break;
-                	}
-                	size++;
-        	}
-		size = 0;
-		if(type != 0)
-		{
-			pip_two(line, type);
-			type = 0;
-		}
->>>>>>> 9c90a5a6bec91aa517888b7f724b8fa030cb54aa
 		if(fork() == 0)
 		{
 			if(fd > 0)
@@ -265,29 +173,18 @@ int f_fork(char **line)
 				return 1;
 			}
 		}
-<<<<<<< HEAD
-=======
-		free_line(line);
-		wait(NULL);
-		line = getlist();
->>>>>>> 9c90a5a6bec91aa517888b7f724b8fa030cb54aa
 	}
 	if(fd > 0)
 	{
 		close(fd);
 	}
 	fd = 0;
-<<<<<<< HEAD
-=======
-	free_line(line);
->>>>>>> 9c90a5a6bec91aa517888b7f724b8fa030cb54aa
 	return 0;
 }
 
 int main()
 {
 	char **line = getlist();
-<<<<<<< HEAD
 	while(strcmp(line[0], "exit") != 0 && strcmp(line[0], "quit") != 0)
 	{
 		f_fork(line);
@@ -296,8 +193,6 @@ int main()
 		line = getlist();
 	}
 	free_line(line);
-=======
-	f_fork(line);
->>>>>>> 9c90a5a6bec91aa517888b7f724b8fa030cb54aa
 	return 0;
 }
+
