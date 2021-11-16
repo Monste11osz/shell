@@ -7,6 +7,9 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 
+int *pid_in_phone = NULL;
+int fon_c = 0;
+
 char *getword(char *end)
 {
 	int size = 0, bytes;
@@ -102,18 +105,6 @@ void free_line(char **line)
 	wait(NULL);
 }*/
 
-void freee_line(char ***triple)
-{
-	for(int i = 0; triple[i] != NULL; i++)
-	{
-		for(int j = 0; triple[i][j] != NULL; j++)
-		{
-			free(triple[i][j]);
-		}
-	}
-	free(triple);
-}
-
 char ***recording(char **line, int n)
 {
 	int size = 0, out = 0;
@@ -147,6 +138,65 @@ char ***recording(char **line, int n)
 	return triiple;
 }
 
+int exec_w(char **line)
+{
+	if(execvp(line[0], line) < 0)
+	{
+		perror("exec failed");
+		free_line(line);
+		return 1;
+	}
+	return 0;
+}
+
+/*void pip_mas_N(char **line, int n)
+{
+	char end;
+	int fd[n][2], pid, size, i = 0, type = 0;
+	for(size = 0; size < n + 1; size++)
+	{
+		if(size != n)
+		{
+			pipe(fd[size]);
+		}
+		if((pid = fork()) == 0)
+		{
+			if(size != 0)
+			{
+				dup2(fd[size - 1][0], 0);
+				close(fd[size - 1][0]);
+				close(fd[size - 1][1]);
+			}
+			if(size != n)
+			{
+				dup2(fd[size][1], 1);
+				close(fd[size][0]);
+				close(fd[size][1]);
+			}
+			exec_w(line);
+		}
+		else
+		{
+			if(size != 0)
+			{
+				close(fd[size - 1][1]);
+				close(fd[size - 1][0]);
+			}
+		}
+		while(line[i] != NULL)
+		{
+			i++;
+		}
+		i++;
+		type = i;
+	}
+	close(fd[size][1]);
+	close(fd[size][0]);
+	for(int j = 0; j < n + 1; j++)
+	{
+		wait(NULL);
+	}
+}*/
 
 void pipe_N(char **line, int n)
 {
@@ -170,9 +220,9 @@ void pipe_N(char **line, int n)
 			if(size != n)
 			{
 				dup2(fd[size][1], 1);
+				close(fd[size][0]);
+				close(fd[size][1]);
 			}
-			close(fd[size][0]);
-			close(fd[size][1]);
 
 			if(execvp(triple[size][0], triple[size]) < 0);
 			{
@@ -184,26 +234,32 @@ void pipe_N(char **line, int n)
 		{
 			if(size != 0)
 			{
+				close(fd[size - 1][1]);
 				close(fd[size - 1][0]);
 			}
-			close(fd[size][1]);
-			waitpid(pid, NULL, 0);
 		}
+	}
+	close(fd[size][1]);
+	close(fd[size][0]);
+	for(int i = 0; i < n + 1; i++)
+	{
+		wait(NULL);
 	}
 }
 
 int f_fork(char **line)
 {
-	int fd = 0, index = 0, type = 0;
-	int size = 0, n = 0;
+	int fd = 0, index = 0, type = 0, pid;
+	int size = 0, n = 0, fon = 0;
 	char end;
 	char *getenv(const char *user);
 	int setenv(const char *user, const char *value, int overwrite);
+	//int *pid_in_phone = NULL;
 	while(line[size] != NULL)
         {
 		if(strcmp(line[size], "cd") == 0)
 		{
-			if(line[size + 1] == NULL || strcmp(line[size + 1], "~") == 0 || strcmp(line[size + 1], "..") == 0)
+			if(line[size + 1] == NULL || strcmp(line[size + 1], "~") == 0)
 			{
 				chdir(getenv("home"));
 				return 0;
@@ -213,6 +269,13 @@ int f_fork(char **line)
 				chdir(line[size + 1]);
 				return 0;
 			}
+		}
+		else if(strcmp(line[size], "&") == 0)
+		{
+			fon = 1;
+			free(line[size]);
+			line[size] = NULL;
+			break;
 		}
                 else if(strcmp(line[size], ">") == 0)
                 {
@@ -260,20 +323,34 @@ int f_fork(char **line)
 	{
 		//pip_two(line, type);
 		pipe_N(line, n);
+		//pip_mas_N(line, n);
 	}
 	else
 	{
-		if(fork() == 0)
+		if(pid = fork() != 0)
 		{
-			if(fd > 0)
+			if(fon == 0)
 			{
-				dup2(fd, index);
+				wait(NULL);
 			}
-			if(execvp(line[0], line) < 0)
+			else
 			{
-				perror("exec failed");
-				free_line(line);
-				return 1;
+				pid_in_phone = realloc(pid_in_phone, fon * sizeof(int));
+				pid_in_phone[fon_c] = pid;
+				fon_c++;
+
+			}
+		}
+		else
+		{
+			if(fork() == 0)
+			{
+
+				if(fd > 0)
+				{
+					dup2(fd, index);
+				}
+				exec_w(line);
 			}
 		}
 	}
@@ -287,15 +364,18 @@ int f_fork(char **line)
 
 int main()
 {
+	//int *pid_in_phone = NULL, fon_c = 0;
 	char **line = getlist();
 	while(strcmp(line[0], "exit") != 0 && strcmp(line[0], "quit") != 0)
 	{
 		f_fork(line);
 		free_line(line);
-		wait(NULL);
+		//wait(NULL);
 		line = getlist();
 	}
 	free_line(line);
+	for(int i = 0; i < fon_c; i++)
+		waitpid(pid_in_phone[i], NULL, 0);
 	return 0;
 }
 
