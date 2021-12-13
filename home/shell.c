@@ -246,10 +246,38 @@ void pipe_N(char **line, int n)
 	}
 }
 
+void pip_and(char **line, int z)
+{
+	int status, j = 0, k = 0;
+	for(int i = 0; i <= z; i++)
+	{
+		if(fork() == 0)
+		{
+			if(execvp(line[k], line) < 0)
+			{
+				perror("exec failed");
+				return;
+			}
+		}
+		else
+		{
+			wait(&status);
+			if(status != 0)
+				return;
+		}
+		while(line[j] != NULL)
+		{
+			j++;
+		}
+		k = j + 1;
+		j = k;
+	}
+}
+
 int f_fork(char **line, int *pid_in_phone, int fon_c)
 {
 	int fd = 0, index = 0, type = 0, pid;
-	int size = 0, n = 0, fon = 0;
+	int size = 0, n = 0, fon = 0, z = 0;
 	char end;
 	char *getenv(const char *user);
 	int setenv(const char *user, const char *value, int overwrite);
@@ -303,6 +331,12 @@ int f_fork(char **line, int *pid_in_phone, int fon_c)
                        	line[size] = NULL;
                        	break;
                 }
+                else if(strcmp(line[size], "&&") == 0)
+		{
+			free(line[size]);
+			line[size] = NULL;
+			z++;
+		}
                 else if(strcmp(line[size], "|") == 0)
                 {
 			n++;
@@ -315,6 +349,10 @@ int f_fork(char **line, int *pid_in_phone, int fon_c)
         	size++;
         }
 	size = 0;
+	if(z != 0)
+	{
+		pip_and(line, z);
+	}
 	if(type != 0)
 	{
 		//pip_two(line, type);
