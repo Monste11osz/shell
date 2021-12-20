@@ -197,14 +197,14 @@ int exec_w(char **line)
 	}
 }*/
 
-void pipe_N(char **line, int n)
+int pipe_N(char **line, int gen)
 {
 	int size;
-	int fd[n][2], pid;
-	char ***triple = recording(line, n);
-	for(size = 0; size < n + 1; size++)
+	int fd[gen][2], pid;
+	char ***triple = recording(line, gen);
+	for(size = 0; size < gen + 1; size++)
 	{
-		if(size != n)
+		if(size != gen)
 		{
 			pipe(fd[size]);
 		}
@@ -216,7 +216,7 @@ void pipe_N(char **line, int n)
 				close(fd[size - 1][0]);
 				close(fd[size - 1][1]);
 			}
-			if(size != n)
+			if(size != gen)
 			{
 				dup2(fd[size][1], 1);
 				close(fd[size][0]);
@@ -240,16 +240,17 @@ void pipe_N(char **line, int n)
 	}
 	close(fd[size][1]);
 	close(fd[size][0]);
-	for(int i = 0; i < n + 1; i++)
+	for(int i = 0; i < gen + 1; i++)
 	{
 		wait(NULL);
 	}
+	return 0;
 }
 
-void pip_and(char **line, int z)
+void implementation(char **line, int kol_vo, int size)
 {
-	int status, j = 0, k = 0;
-	for(int i = 0; i <= z; i++)
+	int status, k = 0;
+	for(int i = 0; i <= kol_vo; i++)
 	{
 		if(fork() == 0)
 		{
@@ -265,19 +266,22 @@ void pip_and(char **line, int z)
 			if(status != 0)
 				return;
 		}
-		while(line[j] != NULL)
+		for(k; k <= size; k++)
 		{
-			j++;
+			if(line[k] == NULL)
+			{
+				k++;
+				break;
+			}
 		}
-		k = j + 1;
-		j = k;
+
 	}
 }
 
 int f_fork(char **line, int *pid_in_phone, int fon_c)
 {
 	int fd = 0, index = 0, type = 0, pid;
-	int size = 0, n = 0, fon = 0, z = 0;
+	int size = 0, gen = 0, fon = 0, kol_vo = 0;
 	char end;
 	char *getenv(const char *user);
 	int setenv(const char *user, const char *value, int overwrite);
@@ -335,11 +339,11 @@ int f_fork(char **line, int *pid_in_phone, int fon_c)
 		{
 			free(line[size]);
 			line[size] = NULL;
-			z++;
+			kol_vo++;
 		}
                 else if(strcmp(line[size], "|") == 0)
                 {
-			n++;
+			gen++;
                         type = size;
 			//free(line[size]);
 			//line[size] = getword(&end);
@@ -348,15 +352,15 @@ int f_fork(char **line, int *pid_in_phone, int fon_c)
                 }
         	size++;
         }
-	size = 0;
-	if(z != 0)
+	//size = 0;
+	if(kol_vo != 0)
 	{
-		pip_and(line, z);
+		implementation(line, kol_vo, size);
 	}
 	if(type != 0)
 	{
 		//pip_two(line, type);
-		pipe_N(line, n);
+		pipe_N(line, gen);
 		//pip_mas_N(line, n);
 	}
 	else
