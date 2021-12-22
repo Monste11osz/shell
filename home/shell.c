@@ -270,6 +270,7 @@ void implementation(char **line, int kol_vo, int size)
 		{
 			if(line[k] == NULL)
 			{
+				//continue;
 				k++;
 				break;
 			}
@@ -278,45 +279,80 @@ void implementation(char **line, int kol_vo, int size)
 	}
 }
 
-int f_fork(char **line, int *pid_in_phone, int fon_c)
+void implementation_or(char **line, int kol_vo_1, int size)
 {
-	int fd = 0, index = 0, type = 0, pid;
-	int size = 0, gen = 0, fon = 0, kol_vo = 0;
-	char end;
+	int status, k = 0;
+	for(int i = 0; i <= kol_vo_1; i++)
+	{
+		if(fork() == 0)
+		{
+			if(execvp(line[k], line) < 0)
+			{
+				perror("exec failed");
+				return;
+			}
+		}
+		else
+		{
+			wait(&status);
+			if(status == 0)
+				return;
+		}
+		for(k; k <= size; k++)
+		{
+			if(line[k] == NULL)
+			{
+				//continue;
+				k++;
+				break;
+			}
+		}
+
+	}
+}
+
+int directory(char **line)
+{
+	int size = 0;
 	char *getenv(const char *user);
 	int setenv(const char *user, const char *value, int overwrite);
 	while(line[size] != NULL)
         {
-		if(strcmp(line[size], "cd") == 0)
+		if(strcmp(line[0], "cd") == 0)
 		{
 			if(line[size + 1] == NULL || strcmp(line[size + 1], "~") == 0)
 			{
 				chdir(getenv("home"));
-				return 0;
+				return 1;
 			}
 			else
 			{
 				chdir(line[size + 1]);
-				return 0;
+				return 1;
 			}
 		}
-		else if(strcmp(line[size], "&") == 0)
-		{
-			fon = 1;
-			free(line[size]);
-			line[size] = NULL;
-			break;
-		}
-                else if(strcmp(line[size], ">") == 0)
+		size++;
+	}
+	return 0;
+}
+
+int check(char **line,  int *index)
+{
+	int fd = 0;
+	int size = 0;
+	while(line[size] != NULL)
+	{
+		if(strcmp(line[size], ">") == 0)
                 {
 			free(line[size]);
                         fd = open(line[size + 1], O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
                         if(fd < 0)
                         {
                                 perror("Open failed");
-				return 1;
+				exit(1);
+				//return 1;
                         }
-                       	index = 1;
+                       	*index = 1;
                        	free(line[size + 1]);
                        	line[size] = NULL;
                        	break;
@@ -328,40 +364,107 @@ int f_fork(char **line, int *pid_in_phone, int fon_c)
                        	if(fd < 0)
                        	{
                                	perror("Open failed");
-                               	return 1;
+				exit(1);
+                               	//return 1;
                        	}
-                       	index = 0;
+                       	*index = 0;
                        	free(line[size + 1]);
                        	line[size] = NULL;
                        	break;
                 }
-                else if(strcmp(line[size], "&&") == 0)
+		size++;
+	}
+	return fd;
+}
+
+int backgraund(char **line, int fon)
+{
+	int size = 0;
+	while(line[size] != NULL)
+	{
+		if(strcmp(line[size], "&") == 0)
+		{
+			fon = 1;
+			free(line[size]);
+			line[size] = NULL;
+			break;
+		}
+		size++;
+	}
+	return fon;
+}
+
+int check_and(char **line)
+{
+	int kol_vo = 0, size = 0;
+	while(line[size] != NULL)
+	{
+		if(strcmp(line[size], "&&") == 0)
 		{
 			free(line[size]);
 			line[size] = NULL;
 			kol_vo++;
 		}
-                else if(strcmp(line[size], "|") == 0)
+		size++;
+	}
+	return kol_vo;
+}
+
+int check_or(char **line)
+{
+	int size = 0, kol_vo_1 = 0;
+	while(line[size] != NULL)
+	{
+		if(strcmp(line[size], "||") == 0)
+		{
+			free(line[size]);
+			line[size] = NULL;
+			kol_vo_1++;
+		}
+		size++;
+	}
+	return kol_vo_1;
+}
+
+int check_pip(char **line)
+{
+	int size = 0, kol_vo_2 = 0;
+	while(line[size] != NULL)
+	{
+		if(strcmp(line[size], "|") == 0)
                 {
-			gen++;
-                        type = size;
-			//free(line[size]);
-			//line[size] = getword(&end);
-                        //line[size] = NULL;
-                	//break;
+			kol_vo_2++;
                 }
         	size++;
-        }
-	//size = 0;
+	}
+	return kol_vo_2;
+}
+
+int f_fork(char **line, int *pid_in_phone, int fon_c)
+{
+	int fd, index, type = 0, pid;
+	int size = 0, kol_vo_2, fon = 0, kol_vo, kol_vo_1;
+	char end;
+	fd = check(line, &index);
+	if(directory(line) == 1)
+	{
+		return 0;
+	}
+	backgraund(line, fon);
+	kol_vo = check_and(line);
+	kol_vo_1 = check_or(line);
+	kol_vo_2 = check_pip(line);
 	if(kol_vo != 0)
 	{
 		implementation(line, kol_vo, size);
 	}
-	if(type != 0)
+	if(kol_vo_1 != 0)
 	{
-		//pip_two(line, type);
-		pipe_N(line, gen);
-		//pip_mas_N(line, n);
+		implementation_or(line, kol_vo, size);
+	}
+	if(kol_vo_2 != 0)
+	{
+		pipe_N(line, kol_vo_2);
 	}
 	else
 	{
@@ -376,7 +479,6 @@ int f_fork(char **line, int *pid_in_phone, int fon_c)
 				pid_in_phone = realloc(pid_in_phone, fon * sizeof(int));
 				pid_in_phone[fon_c] = pid;
 				fon_c++;
-
 			}
 		}
 		else
