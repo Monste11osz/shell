@@ -238,8 +238,11 @@ int pipe_N(char **line, int gen)
 			}
 		}
 	}
-	close(fd[size][1]);
-	close(fd[size][0]);
+	if(gen > 1)
+	{
+		close(fd[size][1]);
+		close(fd[size][0]);
+	}
 	for(int i = 0; i < gen + 1; i++)
 	{
 		wait(NULL);
@@ -350,7 +353,6 @@ int check(char **line,  int *index)
                         {
                                 perror("Open failed");
 				exit(1);
-				//return 1;
                         }
                        	*index = 1;
                        	free(line[size + 1]);
@@ -365,7 +367,6 @@ int check(char **line,  int *index)
                        	{
                                	perror("Open failed");
 				exit(1);
-                               	//return 1;
                        	}
                        	*index = 0;
                        	free(line[size + 1]);
