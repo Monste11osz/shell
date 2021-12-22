@@ -502,14 +502,13 @@ int f_fork(char **line, int *pid_in_phone, int fon_c)
 
 void handler(int signo)
 {
-	int pid = DEVIDED_PID;
+	int pid;
 	puts("\nreseived SIGINT");
 	if(pid != DEVIDED_PID)
 	{
 		kill(pid, SIGINT);
 		pid = DEVIDED_PID;
 	}
-	//exit(1);
 }
 
 int main()
