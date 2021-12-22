@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 
 #define DEVIDED_PID -1
+pid_t pid = 1;
 
 char *getword(char *end)
 {
@@ -305,7 +306,6 @@ void implementation_or(char **line, int kol_vo_1, int size)
 		{
 			if(line[k] == NULL)
 			{
-				//continue;
 				k++;
 				break;
 			}
@@ -441,16 +441,27 @@ int check_pip(char **line)
 	return kol_vo_2;
 }
 
+int count_s(char **line)
+{
+	int size = 0;
+	while(line[size] != NULL)
+	{
+		size++;
+	}
+	return size;
+}
+
 int f_fork(char **line, int *pid_in_phone, int fon_c)
 {
 	int fd, index, type = 0, pid;
-	int size = 0, kol_vo_2, fon = 0, kol_vo, kol_vo_1;
+	int size, kol_vo_2, fon = 0, kol_vo, kol_vo_1;
 	char end;
 	fd = check(line, &index);
 	if(directory(line) == 1)
 	{
 		return 0;
 	}
+	size = count_s(line);
 	backgraund(line, fon);
 	kol_vo = check_and(line);
 	kol_vo_1 = check_or(line);
@@ -502,12 +513,12 @@ int f_fork(char **line, int *pid_in_phone, int fon_c)
 
 void handler(int signo)
 {
-	int pid;
+	//int pid;
 	puts("\nreseived SIGINT");
-	if(pid != DEVIDED_PID)
+	if(pid != 1)
 	{
 		kill(pid, SIGINT);
-		pid = DEVIDED_PID;
+		//pid = DEVIDED_PID;
 	}
 }
 
